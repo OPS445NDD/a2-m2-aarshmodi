@@ -1,23 +1,17 @@
 #!/usr/bin/env python3
-
 '''
-OPS445 Assignment 2 - Winter 2023
+OPS445 Assignment 2 - Summer 2026
 Program: assignment2.py 
-Author: "Student Name"
-The python code in this file is original work written by
-"Student Name". No code in this file is copied from any other source 
-except those provided by the course instructor, including any person, 
-textbook, or on-line resource. I have not shared this python script 
-with anyone or anything except for submission for grading.  
-I understand that the Academic Honesty Policy will be enforced and 
-violators will be reported and appropriate action will be taken.
-
-Description: <Enter your documentation here>
-
-Date: 
-
+Author: "Aarsh Modi"
+The python code in this file is original work written by "Aarsh Modi".
+ No code in this file is copied from any other source except those provided by the course instructor,
+ including any person, textbook, or on-line resource. I have not shared this python script with anyone
+ or anything except for submission for grading.
+ I understand that the Academic Honesty Policy will be enforced and violators will be reported
+ and appropriate action will be taken.
+Description: Reports system and per-process memory usage with a bar graph.
+Date: July 19, 2026
 '''
-
 import argparse
 import os, sys
 
@@ -25,35 +19,52 @@ def parse_command_args() -> object:
     "Set up argparse here. Call this function inside main."
     parser = argparse.ArgumentParser(description="Memory Visualiser -- See Memory Usage Report with bar charts",epilog="Copyright 2023")
     parser.add_argument("-l", "--length", type=int, default=20, help="Specify the length of the graph. Default is 20.")
-    # Create an entry for human-readable. Check the docs to make it a True/False option.
+    parser.add_argument("-H", "--human-readable", action="store_true", help="Prints sizes in human readable format")
     parser.add_argument("program", type=str, nargs='?', help="if a program is specified, show memory use of all associated processes. Show only total use if not.")
     args = parser.parse_args()
     return args
 
 def percent_to_graph(percent: float, length: int=20) -> str:
     "turns a percent 0.0 - 1.0 into a bar graph"
-    pass
+    num_hashes = round(length * percent)
+    num_spaces = length - num_hashes
+    return "#" * num_hashes + " " * num_spaces
 
 def get_sys_mem() -> int:
     "return total system memory (used or available) in kB"
-    # open the meminfo file to do this!
-    pass
+    with open('/proc/meminfo', 'r') as f:
+        for line in f:
+            if line.startswith('MemTotal'):
+                return int(line.split()[1])
 
 def get_avail_mem() -> int:
     "return total memory that is currently available"
-    # open the meminfo file to do this!
-    pass
+    with open('/proc/meminfo', 'r') as f:
+        for line in f:
+            if line.startswith('MemAvailable'):
+                return int(line.split()[1])
 
 def pids_of_prog(app_name: str) -> list:
     "given an app name, return all pids associated with app"
-    # please use os.popen('pidof <app>') to do this!
-    pass
+    try:
+        output = os.popen(f"pidof {app_name}").read().strip()
+        if output == "":
+            return []
+        return output.split()
+    except:
+        return []
 
 def rss_mem_of_pid(proc_id: str) -> int:
     "given a process id, return the Resident memory used"
-    # for a process, open the smaps file and return the total of each
-    # Rss line.
-    pass
+    rss = 0
+    try:
+        with open(f"/proc/{proc_id}/smaps") as f:
+            for line in f:
+                if line.startswith("Rss:"):
+                    rss += int(line.split()[1])
+    except:
+        return 0
+    return rss
 
 def bytes_to_human_r(kibibytes: int, decimal_places: int=2) -> str:
     "turn 1,024 into 1 MiB, for example"
@@ -69,7 +80,7 @@ def bytes_to_human_r(kibibytes: int, decimal_places: int=2) -> str:
 
 if __name__ == "__main__":
     args = parse_command_args()
-    if not args.program:  # not program name is specified.
+    if not args.program:
         pass
     else:
         pass
